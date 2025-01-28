@@ -1,0 +1,19 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: meubancoDonor
+      MYSQL_USER: usuariojavaflutter
+      MYSQL_PASSWORD: senhajavaflutter
+    volumes:
+      - ./db/data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - minha-rede
+
+networks:
+  minha-rede:
+    driver: bridge
