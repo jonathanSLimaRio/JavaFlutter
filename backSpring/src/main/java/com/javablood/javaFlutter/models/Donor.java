@@ -71,9 +71,6 @@ public class Donor {
         }
     }
 
-    // Getters e Setters
-
-    // Enum para sexo
     public enum Sexo {
         MASCULINO, FEMININO
     }

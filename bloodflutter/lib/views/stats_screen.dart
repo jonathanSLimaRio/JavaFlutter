@@ -1,34 +1,26 @@
-// stats_screen.dart
 import 'package:bloodflutter/blocs/donor_bloc.dart';
+import 'package:bloodflutter/widgets/stats_charts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
+
 
 class StatsScreen extends StatelessWidget {
+  const StatsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Estatísticas')),
+      appBar: AppBar(
+        title: const Text('Análise Estatística'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: BlocBuilder<DonorBloc, DonorState>(
         builder: (context, state) {
           if (state is DonorStatsLoaded) {
-            final stats = state.stats;
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildStateChart(stats['estados']),
-                  const SizedBox(height: 20),
-                  _buildAgeImcChart(stats['imc_por_idade']),
-                  const SizedBox(height: 20),
-                  _buildObesityChart(stats['obesidade']),
-                  const SizedBox(height: 20),
-                  _buildBloodTypeAgeChart(stats['media_idade_tipo_sanguineo']),
-                  const SizedBox(height: 20),
-                  _buildDonorsPerReceiverChart(stats['doadores_por_receptor']),
-                ],
-              ),
-            );
+            return _buildStatsCards(state.stats);
           }
           return const Center(child: CircularProgressIndicator());
         },
@@ -36,78 +28,56 @@ class StatsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStateChart(Map<String, int> data) {
-    return SfCartesianChart(
-      title: const ChartTitle(text: 'Candidatos por Estado'),
-      primaryXAxis: const CategoryAxis(),
-      series: <ColumnSeries<MapEntry<String, int>, String>>[
-        ColumnSeries(
-          dataSource: data.entries.toList(),
-          xValueMapper: (entry, _) => entry.key,
-          yValueMapper: (entry, _) => entry.value,
-          dataLabelSettings: const DataLabelSettings(isVisible: true),
-        )
+  Widget _buildStatsCards(Map<String, dynamic> stats) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _buildChartCard(
+          title: 'Distribuição por Estados',
+          child: StateChart(data: stats['estados']),
+        ),
+        _buildChartCard(
+          title: 'IMC Médio por Faixa Etária',
+          child: AgeImcChart(data: stats['imc_por_idade']),
+        ),
+        _buildChartCard(
+          title: 'Obesidade por Gênero',
+          child: ObesityChart(data: stats['obesidade']),
+        ),
+        _buildChartCard(
+          title: 'Idade Média por Tipo Sanguíneo',
+          child: BloodTypeAgeChart(data: stats['media_idade_tipo_sanguineo']),
+        ),
+        _buildChartCard(
+          title: 'Doadores Compatíveis',
+          child: DonorsPerReceiverChart(data: stats['doadores_por_receptor']),
+        ),
       ],
     );
   }
 
-  Widget _buildAgeImcChart(Map<String, double> data) {
-    return SfCartesianChart(
-      title: const ChartTitle(text: 'IMC Médio por Faixa Etária'),
-      primaryXAxis: const CategoryAxis(),
-      series: <LineSeries<MapEntry<String, double>, String>>[
-        LineSeries(
-          dataSource: data.entries.toList(),
-          xValueMapper: (entry, _) => entry.key,
-          yValueMapper: (entry, _) => entry.value,
-          markerSettings: const MarkerSettings(isVisible: true),
-        )
-      ],
-    );
-  }
-
-  Widget _buildObesityChart(Map<String, double> data) {
-    return SfCircularChart(
-      title: const ChartTitle(text: 'Percentual de Obesidade'),
-      legend: const Legend(isVisible: true),
-      series: <PieSeries<MapEntry<String, double>, String>>[
-        PieSeries(
-          dataSource: data.entries.toList(),
-          xValueMapper: (entry, _) => entry.key,
-          yValueMapper: (entry, _) => entry.value,
-          dataLabelSettings: const DataLabelSettings(isVisible: true),
-        )
-      ],
-    );
-  }
-
-  Widget _buildBloodTypeAgeChart(Map<String, double> data) {
-    return SfCartesianChart(
-      title: const ChartTitle(text: 'Média de Idade por Tipo Sanguíneo'),
-      primaryXAxis: const CategoryAxis(),
-      series: <BarSeries<MapEntry<String, double>, String>>[
-        BarSeries(
-          dataSource: data.entries.toList(),
-          xValueMapper: (entry, _) => entry.key,
-          yValueMapper: (entry, _) => entry.value,
-          dataLabelSettings: const DataLabelSettings(isVisible: true),
-        )
-      ],
-    );
-  }
-
-  Widget _buildDonorsPerReceiverChart(Map<String, int> data) {
-    return SfCartesianChart(
-      title: const ChartTitle(text: 'Doadores por Tipo Receptor'),
-      primaryXAxis: const CategoryAxis(),
-      series: <ColumnSeries<MapEntry<String, int>, String>>[
-        ColumnSeries(
-          dataSource: data.entries.toList(),
-          xValueMapper: (entry, _) => entry.key,
-          yValueMapper: (entry, _) => entry.value,
-          dataLabelSettings: const DataLabelSettings(isVisible: true),
-        )
-      ],
+  Widget _buildChartCard({required String title, required Widget child}) {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.only(bottom: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(height: 300, child: child),
+          ],
+        ),
+      ),
     );
   }
 }
