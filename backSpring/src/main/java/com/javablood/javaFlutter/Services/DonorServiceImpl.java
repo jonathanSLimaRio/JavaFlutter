@@ -1,14 +1,10 @@
 package com.javablood.javaFlutter.Services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javablood.javaFlutter.models.Donor;
 import com.javablood.javaFlutter.repositories.DonorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,52 +16,46 @@ public class DonorServiceImpl implements DonorService {
     private DonorRepository donorRepository;
 
     @Override
-    public void processarJson(MultipartFile file) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        List<Donor> doadores = mapper.readValue(file.getInputStream(), new TypeReference<>() {});
-        donorRepository.saveAll(doadores);
+    public Map<String, Long> contarDoadoresPorEstado() {
+        return donorRepository.countByEstado().stream()
+                .collect(Collectors.toMap(
+                        e -> (String) e.get("estado"),
+                        e -> (Long) e.get("total")));
     }
 
     @Override
-    public Map<String, Long> contarDoadoresPorEstado() {
-        return donorRepository.countByEstado().stream()
-            .collect(Collectors.toMap(
-                e -> (String) e.get("estado"),
-                e -> (Long) e.get("total")
-            ));
+    public void processarJson(List<Donor> doadores) {
+        donorRepository.saveAll(doadores);
     }
 
     @Override
     public Map<String, Double> calcularImcMedioPorFaixaEtaria() {
         List<Map<String, Object>> resultados = donorRepository.calculateImcMedioPorFaixaEtaria();
         return resultados.stream()
-            .collect(Collectors.toMap(
-                entry -> {
-                    int faixaInicio = ((Number) entry.get("faixaInicio")).intValue();
-                    return String.format("%d-%d", faixaInicio, faixaInicio + 9);
-                },
-                entry -> ((Number) entry.get("imcMedio")).doubleValue()
-            ));
+                .collect(Collectors.toMap(
+                        entry -> {
+                            int faixaInicio = ((Number) entry.get("faixaInicio")).intValue();
+                            return String.format("%d-%d", faixaInicio, faixaInicio + 9);
+                        },
+                        entry -> ((Number) entry.get("imcMedio")).doubleValue()));
     }
 
     @Override
     public Map<String, Double> calcularPercentualObesosPorSexo() {
         List<Map<String, Object>> resultados = donorRepository.calculatePercentualObesosPorSexo();
         return resultados.stream()
-            .collect(Collectors.toMap(
-                entry -> (String) entry.get("sexo"),
-                entry -> ((Number) entry.get("percentual")).doubleValue()
-            ));
+                .collect(Collectors.toMap(
+                        entry -> (String) entry.get("sexo"),
+                        entry -> ((Number) entry.get("percentual")).doubleValue()));
     }
 
     @Override
     public Map<String, Double> calcularMediaIdadePorTipoSanguineo() {
         List<Map<String, Object>> resultados = donorRepository.calculateMediaIdadePorTipoSanguineo();
         return resultados.stream()
-            .collect(Collectors.toMap(
-                entry -> (String) entry.get("tipo"),
-                entry -> ((Number) entry.get("mediaIdade")).doubleValue()
-            ));
+                .collect(Collectors.toMap(
+                        entry -> (String) entry.get("tipo"),
+                        entry -> ((Number) entry.get("mediaIdade")).doubleValue()));
     }
 
     @Override

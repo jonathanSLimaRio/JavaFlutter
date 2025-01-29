@@ -1,17 +1,20 @@
 package com.javablood.javaFlutter.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.Period;
-@Data 
+
+@Data
 @Entity
 @Table(name = "doadores", indexes = {
-    @Index(name = "idx_estado", columnList = "estado"),
-    @Index(name = "idx_tipo_sanguineo", columnList = "tipo_sanguineo")
+        @Index(name = "idx_estado", columnList = "estado"),
+        @Index(name = "idx_tipo_sanguineo", columnList = "tipo_sanguineo")
 })
 public class Donor {
 
@@ -30,11 +33,11 @@ public class Donor {
     @Column(name = "data_nasc")
     @JsonFormat(pattern = "dd/MM/yyyy")
     @NotNull(message = "Data de nascimento é obrigatória")
-    private LocalDate dataNasc;  // Troquei Date por LocalDate (mais moderno)
+    private LocalDate dataNasc;
 
-    @NotBlank(message = "Sexo é obrigatório")
     @Enumerated(EnumType.STRING)
-    private Sexo sexo;  // Enum para padronização
+    @NotNull(message = "Sexo é obrigatório")
+    private Sexo sexo;
 
     @Email(message = "Email inválido")
     private String email;
@@ -50,7 +53,7 @@ public class Donor {
 
     @NotBlank(message = "Tipo sanguíneo é obrigatório")
     @Column(name = "tipo_sanguineo")
-    @Pattern(regexp = "^(A|B|AB|O)[+-]$", message = "Tipo sanguíneo inválido")
+    @Pattern(regexp = "^(A|B|AB|O)[+-]$", message = "Formato inválido. Ex: A+, O-")
     private String tipoSanguineo;
 
     @Min(value = 1, message = "Altura mínima é 1 metro")
@@ -63,15 +66,20 @@ public class Donor {
 
     private Integer idade;
 
-    // Calcula a idade automaticamente após carregar do banco
-    @PostLoad
+    @PrePersist
+    @PreUpdate
     private void calcularIdade() {
         if (this.dataNasc != null) {
             this.idade = Period.between(this.dataNasc, LocalDate.now()).getYears();
         }
     }
 
+    @PostLoad
+    private void atualizarIdadePosCarregamento() {
+        calcularIdade();
+    }
+
     public enum Sexo {
-        MASCULINO, FEMININO
+        Feminino, Masculino
     }
 }

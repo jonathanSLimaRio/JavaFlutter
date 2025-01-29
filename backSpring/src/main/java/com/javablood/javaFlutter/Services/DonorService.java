@@ -1,11 +1,11 @@
 package com.javablood.javaFlutter.Services;
 
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
+import com.javablood.javaFlutter.models.Donor;
+import java.util.List;
 import java.util.Map;
 
 public interface DonorService {
-    void processarJson(MultipartFile file) throws IOException;
+    void processarJson(List<Donor> doadores);
     Map<String, Long> contarDoadoresPorEstado();
     Map<String, Double> calcularImcMedioPorFaixaEtaria();
     Map<String, Double> calcularPercentualObesosPorSexo();
