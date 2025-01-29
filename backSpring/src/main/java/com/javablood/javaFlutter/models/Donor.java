@@ -1,7 +1,10 @@
 package com.javablood.javaFlutter.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.javablood.javaFlutter.models.converters.SexoConverter;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -35,6 +38,7 @@ public class Donor {
     @NotNull(message = "Data de nascimento é obrigatória")
     private LocalDate dataNasc;
 
+    @Convert(converter = SexoConverter.class)
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Sexo é obrigatório")
     private Sexo sexo;
@@ -80,6 +84,17 @@ public class Donor {
     }
 
     public enum Sexo {
-        Feminino, Masculino
+        FEMININO,
+        MASCULINO;
+
+        @JsonCreator
+        public static Sexo fromString(String value) {
+            return valueOf(value.toUpperCase());
+        }
+
+        @JsonValue
+        public String toValue() {
+            return this.name().toLowerCase();
+        }
     }
 }

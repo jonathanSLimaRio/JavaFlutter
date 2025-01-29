@@ -32,6 +32,7 @@ public class DonorServiceImpl implements DonorService {
     public Map<String, Double> calcularImcMedioPorFaixaEtaria() {
         List<Map<String, Object>> resultados = donorRepository.calculateImcMedioPorFaixaEtaria();
         return resultados.stream()
+                .filter(entry -> entry.get("faixaInicio") != null && entry.get("imcMedio") != null)
                 .collect(Collectors.toMap(
                         entry -> {
                             int faixaInicio = ((Number) entry.get("faixaInicio")).intValue();
