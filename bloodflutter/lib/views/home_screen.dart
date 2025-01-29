@@ -28,6 +28,8 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            _buildLocalUploadButton(context),
+            const SizedBox(height: 20),
             _buildUploadButton(context),
             const SizedBox(height: 20),
             _buildStatsButton(context),
@@ -92,6 +94,26 @@ class HomeScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildLocalUploadButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        icon: const Icon(Icons.upload_file),
+        label: const Text('CARREGAR DADOS LOCAIS'),
+        style: FilledButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.tertiary,
+        ),
+        onPressed: () {
+          context.read<DonorBloc>().add(UploadLocalDonors());
+        },
+      ),
     );
   }
 }

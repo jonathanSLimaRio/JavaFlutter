@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
 class BloodBankService {
@@ -8,7 +10,7 @@ class BloodBankService {
     final uri = Uri.parse('$baseUrl/upload');
     final request = http.MultipartRequest('POST', uri);
     request.files.add(await http.MultipartFile.fromPath('file', filePath));
-    
+
     final response = await request.send();
     if (response.statusCode != 200) {
       throw Exception('Erro no upload: ${response.reasonPhrase}');
@@ -39,5 +41,28 @@ class BloodBankService {
       return json.decode(response.body);
     }
     throw Exception('Failed to load $endpoint');
+  }
+
+  Future<void> uploadLocalDonors() async {
+    try {
+      // Carrega o arquivo local
+      final jsonData = await rootBundle.loadString('data/data.json');
+      final tempDir = Directory.systemTemp;
+      final tempFile = File('${tempDir.path}/data.json');
+      await tempFile.writeAsString(jsonData);
+
+      // Faz o upload do arquivo temporário
+      final uri = Uri.parse('$baseUrl/upload');
+      final request = http.MultipartRequest('POST', uri);
+      request.files
+          .add(await http.MultipartFile.fromPath('file', tempFile.path));
+
+      final response = await request.send();
+      if (response.statusCode != 200) {
+        throw Exception('Erro no upload: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      throw Exception('Erro ao carregar arquivo local: $e');
+    }
   }
 }

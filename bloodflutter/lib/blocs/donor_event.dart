@@ -7,4 +7,6 @@ class UploadDonors extends DonorEvent {
   UploadDonors(this.filePath);
 }
 
+class UploadLocalDonors extends DonorEvent {} 
+
 class LoadStats extends DonorEvent {}

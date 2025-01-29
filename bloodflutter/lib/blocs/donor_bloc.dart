@@ -10,6 +10,7 @@ class DonorBloc extends Bloc<DonorEvent, DonorState> {
 
   DonorBloc(this._service) : super(DonorInitial()) {
     on<UploadDonors>(_handleUploadDonors);
+    on<UploadLocalDonors>(_handleUploadLocalDonors);
     on<LoadStats>(_handleLoadStats);
   }
 
@@ -20,6 +21,19 @@ class DonorBloc extends Bloc<DonorEvent, DonorState> {
     try {
       emit(DonorLoading());
       await _service.uploadDonors(event.filePath);
+      emit(DonorUploadSuccess());
+    } catch (e) {
+      emit(DonorError(e.toString()));
+    }
+  }
+
+  FutureOr<void> _handleUploadLocalDonors(
+    UploadLocalDonors event,
+    Emitter<DonorState> emit,
+  ) async {
+    try {
+      emit(DonorLoading());
+      await _service.uploadLocalDonors();
       emit(DonorUploadSuccess());
     } catch (e) {
       emit(DonorError(e.toString()));
