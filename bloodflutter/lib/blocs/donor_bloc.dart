@@ -21,7 +21,8 @@ class DonorBloc extends Bloc<DonorEvent, DonorState> {
     try {
       emit(DonorLoading());
       await _service.uploadDonors(event.filePath);
-      emit(DonorUploadSuccess());
+      emit(DonorUploadSuccess()); // Mantido para feedback imediato
+      emit(DonorDataAvailable()); // Novo estado para indicar dados disponíveis
     } catch (e) {
       emit(DonorError(e.toString()));
     }
@@ -34,7 +35,8 @@ class DonorBloc extends Bloc<DonorEvent, DonorState> {
     try {
       emit(DonorLoading());
       await _service.uploadLocalDonors();
-      emit(DonorUploadSuccess());
+      emit(DonorUploadSuccess()); // Mantido para feedback imediato
+      emit(DonorDataAvailable()); // Novo estado para indicar dados disponíveis
     } catch (e) {
       emit(DonorError(e.toString()));
     }
@@ -47,7 +49,11 @@ class DonorBloc extends Bloc<DonorEvent, DonorState> {
     try {
       emit(DonorLoading());
       final stats = await _service.getStats();
-      emit(DonorStatsLoaded(stats));
+      if (stats.values.any((data) => data is Map && data.isNotEmpty)) {
+        emit(DonorStatsLoaded(stats));
+      } else {
+        emit(DonorError('Não há dados suficientes para gerar estatísticas'));
+      }
     } catch (e) {
       emit(DonorError(e.toString()));
     }

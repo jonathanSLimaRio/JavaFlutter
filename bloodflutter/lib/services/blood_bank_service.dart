@@ -26,6 +26,12 @@ class BloodBankService {
       _getStats('estatisticas/doadores-compativeis'),
     ]);
 
+    final allEmpty = responses.every(
+        (data) => data is Map && data.isEmpty || data is List && data.isEmpty);
+
+    if (allEmpty)
+      throw Exception('Nenhum dado disponível para gerar estatísticas');
+
     return {
       'estados': responses[0],
       'imc_por_idade': responses[1],
@@ -47,19 +53,21 @@ class BloodBankService {
     try {
       // Carrega o arquivo local
       final jsonData = await rootBundle.loadString('data/data.json');
-      final tempDir = Directory.systemTemp;
-      final tempFile = File('${tempDir.path}/data.json');
-      await tempFile.writeAsString(jsonData);
 
-      // Faz o upload do arquivo temporário
+      // Valida o formato JSON
+      final jsonList = json.decode(jsonData) as List;
+      if (jsonList.isEmpty) throw Exception('Arquivo JSON vazio');
+
+      // Envia diretamente no corpo da requisição
       final uri = Uri.parse('$baseUrl/upload');
-      final request = http.MultipartRequest('POST', uri);
-      request.files
-          .add(await http.MultipartFile.fromPath('file', tempFile.path));
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonData,
+      );
 
-      final response = await request.send();
       if (response.statusCode != 200) {
-        throw Exception('Erro no upload: ${response.reasonPhrase}');
+        throw Exception('Erro no upload: ${response.body}');
       }
     } catch (e) {
       throw Exception('Erro ao carregar arquivo local: $e');

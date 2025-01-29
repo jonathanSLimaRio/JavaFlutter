@@ -64,38 +64,46 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildStatsButton(BuildContext context) {
-    return BlocConsumer<DonorBloc, DonorState>(
-      listener: (context, state) {
-        if (state is DonorError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
-        }
-      },
-      builder: (context, state) {
-        return SizedBox(
-          width: double.infinity,
-          child: FilledButton.icon(
-            icon: const Icon(Icons.insights),
-            label: state is DonorLoading
-                ? const CircularProgressIndicator()
-                : const Text('VER ESTATÍSTICAS'),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              backgroundColor: Theme.of(context).colorScheme.secondary,
-            ),
-            onPressed: () {
-              context.read<DonorBloc>().add(LoadStats());
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const StatsScreen()));
-            },
-          ),
+  return BlocConsumer<DonorBloc, DonorState>(
+    listener: (context, state) {
+      if (state is DonorError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.message)),
         );
-      },
-    );
-  }
+      }
+    },
+    builder: (context, state) {
+      final hasData = state is DonorDataAvailable || 
+                     (state is DonorStatsLoaded && state.stats.isNotEmpty);
+      
+      return SizedBox(
+        width: double.infinity,
+        child: FilledButton.icon(
+          icon: const Icon(Icons.insights),
+          label: state is DonorLoading
+              ? const CircularProgressIndicator()
+              : const Text('VER ESTATÍSTICAS'),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            backgroundColor: hasData
+                ? Theme.of(context).colorScheme.secondary
+                : Colors.grey[300],
+          ),
+          onPressed: hasData ? () {
+            context.read<DonorBloc>().add(LoadStats());
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const StatsScreen()),
+            );
+          } : null,
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildLocalUploadButton(BuildContext context) {
     return SizedBox(
